@@ -1,0 +1,33 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data-Driven Business Analytics Dashboard</title><link rel="icon" href="data:,">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f4f6fa;--card:#fff;--text:#14213d;--muted:#5b6478;--line:#e2e6ef;--a:#1f77b4;--b:#ff7f0e}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1623;--card:#16213a;--text:#e8edf7;--muted:#9aa6bf;--line:#26345a;--a:#4fa3e0;--b:#ffa94d}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:24px}
+h1{font-size:22px;margin:0 0 4px}.sub{color:var(--muted);margin:0 0 20px;font-size:14px}
+.grid{display:grid;gap:16px}.kpis{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:16px}.charts{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}.k{color:var(--muted);font-size:13px}.v{font-size:26px;font-weight:700;margin-top:4px}
+.card h2{font-size:15px;margin:0 0 10px}.box{position:relative;height:280px}.wide{grid-column:1/-1}
+</style></head><body>
+<h1>Data-Driven Business Analytics Dashboard</h1><p class="sub">Sales performance, Jan–Dec 2025 · MongoDB aggregation → Power BI / web dashboard</p>
+<div class="grid kpis" id="kpis"></div>
+<div class="grid charts">
+<div class="card wide"><h2>Monthly Revenue and Profit</h2><div class="box"><canvas id="c1"></canvas></div></div>
+<div class="card"><h2>Revenue by Product Category</h2><div class="box"><canvas id="c2"></canvas></div></div>
+<div class="card"><h2>Revenue by Region</h2><div class="box"><canvas id="c3"></canvas></div></div>
+<div class="card wide"><h2>Top Products by Units Sold</h2><div class="box"><canvas id="c4"></canvas></div></div>
+</div>
+<script>
+const D={"kpi": {"revenue": 268595.0, "profit": 93116.1, "orders": 661, "units": 972}, "monthly_revenue_profit": [["2025-01", 29085.0, 10074.3], ["2025-02", 28027.0, 9713.7], ["2025-03", 24189.0, 8379.2], ["2025-04", 11125.0, 3855.3], ["2025-05", 20149.0, 6983.6], ["2025-06", 18413.0, 6392.7], ["2025-07", 18573.0, 6447.1], ["2025-08", 23139.0, 8022.2], ["2025-09", 7042.0, 2437.5], ["2025-10", 36246.0, 12568.3], ["2025-11", 23104.0, 8008.2], ["2025-12", 29503.0, 10234.0]], "revenue_by_category": [["Electronics", 228365.0], ["Furniture", 33300.0], ["Accessories", 6010.0], ["Stationery", 920.0]], "revenue_by_region": [["North", 79823.0], ["East", 69895.0], ["South", 63989.0], ["West", 54888.0]], "top_products_by_units": [["Smartphone", 148], ["Laptop", 118], ["Headphones", 112], ["Printer", 101], ["Backpack", 95], ["Office Chair", 95], ["Monitor", 93], ["Desk", 80]]},S=getComputedStyle(document.documentElement),g=n=>S.getPropertyValue(n).trim();
+Chart.defaults.color=g('--muted');Chart.defaults.borderColor=g('--line');
+const inr=n=>'₹'+Math.round(n).toLocaleString('en-IN'),K=D.kpi;
+[['Total Revenue',inr(K.revenue)],['Total Profit',inr(K.profit)],['Profit Margin',(K.profit/K.revenue*100).toFixed(1)+'%'],['Orders',K.orders.toLocaleString('en-IN')],['Units Sold',K.units.toLocaleString('en-IN')]]
+.forEach(([k,v])=>document.getElementById('kpis').insertAdjacentHTML('beforeend',`<div class="card"><div class="k">${k}</div><div class="v">${v}</div></div>`));
+const o=f=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:f},tooltip:{callbacks:{label:c=>' '+(c.dataset.label||'')+' '+inr(c.parsed.y)}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>v>=1000?v/1000+'k':v}}}});
+const bar=(id,rows,opt)=>new Chart(id,{type:'bar',data:{labels:rows.map(r=>r[0]),datasets:[{data:rows.map(r=>r[1]),backgroundColor:g('--a')}]},options:opt});
+const M=D.monthly_revenue_profit,ln=(l,i,c)=>({label:l,data:M.map(r=>r[i]),borderColor:g(c),backgroundColor:g(c),tension:.25});
+new Chart('c1',{type:'line',data:{labels:M.map(r=>r[0]),datasets:[ln('Revenue',1,'--a'),ln('Profit',2,'--b')]},options:o(true)});
+bar('c2',D.revenue_by_category,o(false));bar('c3',D.revenue_by_region,o(false));
+const u=o(false);u.plugins.tooltip.callbacks.label=c=>' '+c.parsed.y+' units';bar('c4',D.top_products_by_units,u);
+</script></body></html>
